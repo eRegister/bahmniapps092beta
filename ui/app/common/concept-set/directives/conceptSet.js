@@ -381,7 +381,10 @@ angular.module('bahmni.common.conceptSet')
                                         if(element.label == "Crypto Menengitis Regimen")
                                         {
                                             if(element.value != undefined ) {
-                                                appService.setRegimen(element.value.displayString);
+                                                appService.set_AHD_Regimen(element.value.displayString);
+                                            }
+                                            else{
+                                                appService.set_AHD_Regimen('');
                                             }
                                         }
                                     })

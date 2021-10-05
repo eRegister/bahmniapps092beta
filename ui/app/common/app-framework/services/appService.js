@@ -233,7 +233,7 @@ angular.module('bahmni.common.appFramework')
                 return appLoader.promise;
             };
 
-            // **************Function to be used to set and get flags****************
+            // **************Medications Automations: Function to be used to set and get flags****************
             let Regimen = '';
             let isActiveSet = false; 
             let isDeactivated = false;
@@ -280,6 +280,16 @@ angular.module('bahmni.common.appFramework')
             }
             this.getIsOrderRegimenInserted  = function(){
                 return isOrderRegimenInserted;
+            }
+
+            //------------------------------------------------------------------------------------
+            let _AHD_Regimen = '';
+            this.set_AHD_Regimen  = function (_ahd_regimen){
+                _AHD_Regimen = _ahd_regimen;
+            }
+            this.get_AHD_Regimen = function()
+            {
+                return _AHD_Regimen;
             }
 
             //---------------------------Auto fill of observations flags

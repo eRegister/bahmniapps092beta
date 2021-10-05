@@ -327,6 +327,28 @@ angular.module('bahmni.clinical')
                 }else $scope.orderSets = {};
             }
 
+            var addMultipleOrderSetsDrugsToMedicationTabAHD = function (Regimen) {
+
+                if (Regimen && Regimen.length >= 3) {
+                    orderSetService.getOrderSetsByQuery(Regimen).then(function (response) {
+                        $scope.orderSets = response.data.results;
+                        _.each($scope.orderSets, function (orderSet) {
+                            _.each(orderSet.orderSetMembers, setUpOrderSetTransactionalData);
+                        });
+                        if(_.isEmpty($scope.orderSets) == false){
+                           // $scope.treatments.pop();
+                            // while($scope.orderSetTreatments.length > 0) 
+                            //     $scope.orderSetTreatments.pop();
+                            if(appService.getOrderstatus() != true )
+                                $scope.addOrderSet($scope.orderSets[0]);
+                            else $scope.clearForm();
+                        }else $scope.removeOrderSet();
+                    }); 
+                }else {
+                    $scope.orderSets = {}
+                };
+            }
+
             var addsingleDrugsToMedicationsTab = function(Regimen){
                 if(Regimen && Regimen.length >= 3) {
                     let selectItem = {
@@ -354,8 +376,12 @@ angular.module('bahmni.clinical')
 
             var updateOrderFromObsData =  function(){
                 let Regimen = appService.getRegimen();
+                let _AHD_Regimen = appService.get_AHD_Regimen();
                 addMultipleOrderSetsDrugsToMedicationTab(Regimen);
                 addsingleDrugsToMedicationsTab(Regimen);
+                if(_AHD_Regimen != ''){
+                    addMultipleOrderSetsDrugsToMedicationTabAHD(_AHD_Regimen);
+                }
             }
 
             $scope.insertSingleOderDrugsToTreamtments = function(regimen){
