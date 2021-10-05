@@ -376,6 +376,15 @@ angular.module('bahmni.common.conceptSet')
                                             }
                                         }
                                     }
+
+                                    element.groupMembers.forEach(element => {
+                                        if(element.label == "Crypto Menengitis Regimen")
+                                        {
+                                            if(element.value != undefined ) {
+                                                appService.setRegimen(element.value.displayString);
+                                            }
+                                        }
+                                    })
                                 })
                             });
                             
@@ -610,7 +619,6 @@ angular.module('bahmni.common.conceptSet')
                                                     }
                                                     if(element.selectedObs.RH){
                                                         appService.setRegimen("RH-");
-                                                        console.log(element.selectedObs);
                                                         appService.setIsOrderRegimenInserted(true); 
                                                     }
                                                     if(element.selectedObs.RHZ){
