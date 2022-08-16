@@ -7,6 +7,7 @@ angular.module('bahmni.reports')
             removeAfterUpload: true,
             autoUpload: true
         });
+        $scope.searchToken = "";   
 
         $scope.uploader.onSuccessItem = function (fileItem, response) {
             fileItem.report.reportTemplateLocation = response;
@@ -110,5 +111,17 @@ angular.module('bahmni.reports')
             initializeFormats();
         };
 
+        $scope.searchReport = function (searchToken) {
+            $scope.searchToken = searchToken;
+                _.forEach($rootScope.reportsRequiringDateRange, function (report) {
+                    var hiddenReports = 0;
+                    if (report.name.match(new RegExp($scope.searchToken, "i")) === null) {
+                        report.hidden = true;
+                        hiddenReports++;
+                    } else {
+                        report.hidden = false;
+                    }                   
+                });                         
+        };
         initialization();
     }]);
