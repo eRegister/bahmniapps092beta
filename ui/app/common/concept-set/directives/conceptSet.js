@@ -743,6 +743,31 @@ angular.module('bahmni.common.conceptSet')
                                     }
                                  } catch (error) { }
                             });}
+                    // Hide TPT Completion date if, it is not completed - Thabiso Nthako
+                    $scope.$watch(function(){
+                        if($scope.conceptSetName === "HIV Treatment and Care Progress Template"){
+                            $scope.observations.forEach((obs)=>{                                
+                                obs.groupMembers.forEach((member) =>{
+                                    if(member.label === 'Patient Register'){ 
+                                       try{
+                                            if(member.groupMembers[27]._value.name === "Yes"){
+                                                if(member.groupMembers[28]._value !== " "){
+                                                    member.groupMembers[28].hide = true;
+                                                    console.log( member.groupMembers[28]._value);
+                                                }                                                    
+                                            }else{
+                                                member.groupMembers[28].hide = false;
+                                                    console.log( member.groupMembers[28]._value);
+
+                                            }
+                                        }catch(error){
+
+                                       }                                          
+                                    }                                     
+                                });
+                            });
+                        }
+                    });
                     //Making Place of Delivery Not Mandatory on ANC Form nkepanem
                     $scope.$watch(function(){
                         if($scope.conceptSetName === "ANC, ANC Program"){
@@ -759,8 +784,6 @@ angular.module('bahmni.common.conceptSet')
                                 
                             }
                         }
-
-
                     })
 
                     // TODO : Hack to include functionality for pre-populating ART Regimens - Teboho
@@ -795,6 +818,7 @@ angular.module('bahmni.common.conceptSet')
                             }
                         
                     });
+                    
                     if (conceptSetName == "HIV Treatment and Care Progress Template") {
                         return $q.all([conceptSetService.getConcept({
                             name: conceptSetName,
@@ -1080,7 +1104,10 @@ angular.module('bahmni.common.conceptSet')
                     deregisterAddMore();
                     cleanUpListenerShowPrevious();
                 });
+                 console.log($scope);
             };
+
+
 
             return {
                 restrict: 'E',
