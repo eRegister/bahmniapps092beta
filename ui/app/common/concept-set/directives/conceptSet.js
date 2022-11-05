@@ -763,20 +763,22 @@ angular.module('bahmni.common.conceptSet')
 
 
                     })
-                    //Gestational Age nkepanem
+                    //Gestational Age nkepanem and Nthako
                     $scope.$watch(function(){
-                        if($scope.conceptSetName === "ANC, ANC Program"){
-                            
+                        if($scope.conceptSetName === "ANC, ANC Program"){                            
                             try {
                                 $scope.observations.forEach((obs)=>{
                                     obs.groupMembers.forEach(member =>{
                                         if(member.label == 'LOR'){    
-
-                                           var today = new Date();
-                                           var lastMenstrualDate = new Date(edd)
-                                           var gestationalAge = Math.floor((today - lastMenstrualDate) / (7 * 24 * 60 * 60 * 1000))
-                                           member.groupMembers[0].groupMembers[6].value = gestationalAge
+                                            if(edd == null){
+                                                console.log("LNMP field is empty");
+                                            }else{
+                                                var today = new Date();
+                                                var lastMenstrualDate = new Date(edd)
+                                                var gestationalAge = Math.floor((today - lastMenstrualDate) / (7 * 24 * 60 * 60 * 1000))
+                                                member.groupMembers[0].groupMembers[6].value = gestationalAge
                                            
+                                            }                                           
                                         }
                                     })
                             });
