@@ -771,11 +771,14 @@ angular.module('bahmni.common.conceptSet')
                                 $scope.observations.forEach((obs)=>{
                                     obs.groupMembers.forEach(member =>{
                                         if(member.label == 'LOR'){    
-
-                                           var today = new Date();
-                                           var lastMenstrualDate = new Date(edd)
-                                           var gestationalAge = Math.floor((today - lastMenstrualDate) / (7 * 24 * 60 * 60 * 1000))
-                                           member.groupMembers[0].groupMembers[6].value = gestationalAge
+                                            if(edd == null){
+                                                console.log("Done not calculate Weeks of current gestation by LMP method");
+                                            }else{
+                                                var today = new Date();
+                                                var lastMenstrualDate = new Date(edd);
+                                                var gestationalAge = Math.floor((today - lastMenstrualDate) / (7 * 24 * 60 * 60 * 1000));
+                                                member.groupMembers[0].groupMembers[6].value = gestationalAge;
+                                            }
                                            
                                         }
                                     })
