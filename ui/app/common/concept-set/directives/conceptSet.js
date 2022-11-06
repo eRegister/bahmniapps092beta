@@ -779,7 +779,7 @@ angular.module('bahmni.common.conceptSet')
                                                 member.groupMembers[0].groupMembers[6].value = gestationalAge
                                            
                                             }                                           
-                                        }
+                                        }  
                                     })
                             });
                             } catch (error) {
