@@ -35,6 +35,33 @@ angular.module('bahmni.registration')
                     console.error('Error during address hierarchy search:', error);
                 });
             }
+            $scope.selectedIndices = [];
+            $scope.unselectedIndices = [];
+
+            $scope.updateSelectedPatients = function (index) {
+                    var indexOfSelected = $scope.selectedIndices.indexOf(index);
+                var indexOfUnselected = $scope.unselectedIndices.indexOf(index);
+                console.log( " Selected  : ",$scope.unselectedIndices);
+                console.log ("Not selected: ",$scope.selectedIndices);
+                
+                // if($scope.unselectedIndices.length == 0){
+                //     for(let i=0;i<$scope.cag.cagListLength.size();i++){
+                //   $scope.unselectedIndices.splice(i, 1);
+
+                //     }
+                // }
+
+                if (indexOfSelected === -1 && indexOfUnselected === -1) {
+                $scope.selectedIndices.push(index);
+                } else if (indexOfSelected !== -1) {
+                $scope.selectedIndices.splice(indexOfSelected, 1);
+                $scope.unselectedIndices.push(index);
+                } else {
+                $scope.unselectedIndices.splice(indexOfUnselected, 1);
+                $scope.selectedIndices.push(index);
+                }
+            };
+
             $scope.showResults=0;
             $scope.selectAddress = function(selectedAddress){
                 console.log(selectedAddress)
@@ -206,85 +233,131 @@ angular.module('bahmni.registration')
                 }
             });
 
-            $scope.startVisit = function(cagMember, cagListLength){
-                $scope.patientThis = "5a6f70be-19c2-442e-adf4-89e184abd039";
-                // Generate the current date and time
-                console.log($scope);
-                console.log($rootScope);
-                const currentDate = new Date();
-                const dateStarted = currentDate.toISOString().slice(0, 19).replace("T", " ");
-                const cagUuid = $scope.uuid;
-                const patientUuid = cagMember.uuid;
-                const locationUuid = "8d6c993e-c2cc-11de-8d13-0010c6dffd0f";
-                const encounterType = "81888515-3f10-11e4-adec-0800271c1b75";
-                const encounterDatetime = "2023-10-12 03:32:46";
-                const conceptUuid = "9b1fa8e6-8209-4fcd-abd2-142887fc83e0";
-                const valueCoded = "a3e3fdfe-e03c-401d-a3fd-1c2553fefe53";
-                const valueCodedName = "HTC, Patient";
-                const valueNumeric  = 140;//$scope.Height;
-                console.log($scope.Height);
-                const absenteesObj = {
-                    "429a3773-d45f-41de-a07e-bec53a6bff22": "Went to Bloemfontein"
-                };
-                //const locationName = "Unknown Location";
+            $scope.patientsToBeStartedVisits = []; 
+            $scope.patientsNotBeStartedVisits = [];
+            $scope.visitUuids = [];
 
-                // Build the JSON data
-                const data = {
-                    "cag": {
-                        "uuid": cagUuid
-                    },
-                    "dateStarted": dateStarted,
-                    "attenderVisit": {
-                        "patient": {
-                            "uuid": patientUuid
+            $scope.startVisit = function(){
+                let length = 0;
+
+                for(let selectedPatient in $scope.selectedIndices){
+                    length++;
+                    // console.log("Buttons buttons", $scope.selectedIndices);
+                    for(let patient in $scope.cag.cagPatientList){
+                        // console.log("Selected patient Index : ", patient);//   
+                        if(selectedPatient == patient){
+                            $scope.patientsToBeStartedVisits.push($scope.cag.cagPatientList[$scope.selectedIndices[selectedPatient]]);
+                            console.log("uuid : ", $scope.patientsToBeStartedVisits[selectedPatient].uuid);
+                        }
+                    }
+                }
+                console.log(length);
+                $scope.visitUuids = [length];
+                for(let i =0;i<length;i++){
+                    // $scope.visitUuids.push()
+                    $scope.visitUuids[i] = $scope.patientsToBeStartedVisits[i].uuid;
+
+                }
+
+                console.log("another : ", $scope.visitUuids);
+                for(let visisPatients in $scope.cag.cagPatientList){
+                    if(!Object.values($scope.patientsToBeStartedVisits).includes($scope.cag.cagPatientList[visisPatients])){
+                        $scope.patientsNotBeStartedVisits.push($scope.cag.cagPatientList[visisPatients]);
+                        console.log("This Not visit : ", $scope.cag.cagPatientList[visisPatients].uuid);
+                    }
+                }
+ 
+                console.log("Cag Patients : ",$scope.cag.cagPatientList);
+                console.log("Patients that should not be stated visits ",$scope.patientsNotBeStartedVisits);
+                console.log("Patients to start visit: ",$scope.patientsToBeStartedVisits);
+                console.log("First patient :",$scope.patientsToBeStartedVisits[0]);
+                console.log("Second patient : ",$scope.patientsToBeStartedVisits[1]);
+
+
+                for(let numberOfUuids in  $scope.visitUuids){
+
+                    // Generate the current date and time
+                    const currentDate = new Date();
+                    const dateStarted = currentDate.toISOString().slice(0, 19).replace("T", " ");
+                    const cagUuid = $scope.uuid;
+                    
+                    const patientUuid = $scope.visitUuids[numberOfUuids];//$scope.patientsToBeStartedVisits[numberOfPatient].uuid;//$scope.cag.cagPatientList[$scope.patientsToBeStartedVisits[numberOfPatient]].uuid;
+                    // console.log("index of seleected button : ", $scope.patientsToBeStartedVisits[numberOfPatient]);
+                    console.log ("visit opened for : " ,patientUuid);
+                    // console.log ("number of patients : " , numberOfPatient);
+
+                    const locationUuid = "8d6c993e-c2cc-11de-8d13-0010c6dffd0f";                                                                                                                                
+                    const encounterType = "81888515-3f10-11e4-adec-0800271c1b75";
+                    const encounterDatetime = "2023-10-12 03:32:46";
+                    const conceptUuid = "9b1fa8e6-8209-4fcd-abd2-142887fc83e0";
+                    const valueCoded = "a3e3fdfe-e03c-401d-a3fd-1c2553fefe53";
+                    const valueCodedName = "HTC, Patient";
+                    const valueNumeric  = 140;//$scope.Height;
+                    console.log($scope.Height);
+                    const absenteesObj = {
+                        "b2a35126-d007-4a90-8859-f41f55ed980c": "Went to Bloemfontein"
+                    };
+                    //const locationName = "Unknown Location";
+
+                    // Build the JSON data
+                    const data = {
+                        "cag": {
+                            "uuid": cagUuid
                         },
-                        "location": {
-                            "uuid": locationUuid
-                        },
-                        "encounters": [
-                            {
-                                "encounterType": encounterType,
-                                "encounterDatetime": encounterDatetime,
-                                "patient": {
-                                    "uuid": patientUuid
-                                },
-                                "location": {
-                                    "uuid": locationUuid
-                                },
-                                "obs": [
-                                    {
-                                        "concept": {
-                                            "uuid": conceptUuid
-                                        },
-                                        "valueCoded": valueCoded,
-                                        "valueCodedName": valueCodedName
+                        "dateStarted": dateStarted,
+                        "attenderVisit": {
+                            "patient": {
+                                "uuid": patientUuid
+                            },
+                            "location": {
+                                "uuid": locationUuid
+                            },
+                            "encounters": [
+                                {
+                                    "encounterType": encounterType,
+                                    "encounterDatetime": encounterDatetime,
+                                    "patient": {
+                                        "uuid": patientUuid
                                     },
-                                    {
-                                        "concept": {
-                                            "uuid": "5090AAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                                    "location": {
+                                        "uuid": locationUuid
+                                    },
+                                    "obs": [
+                                        {
+                                            "concept": {
+                                                "uuid": conceptUuid
+                                            },
+                                            "valueCoded": valueCoded,
+                                            "valueCodedName": valueCodedName
                                         },
-                                        "valueNumeric": valueNumeric
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    "absentees": absenteesObj,
-                    "locationName": "ART/TB Clinic"
-                };
-                
-                console.log(data);
-                apiUrl = Bahmni.Registration.Constants.baseOpenMRSRESTURL+'/cagVisit/';
-                $http({
-                    url: apiUrl,
-                    method: 'POST',
-                    headers: {
-                    'Content-Type': 'application/json'
-                    },
-                    data: angular.toJson(data)
-                }).then(function(response){
-                    messagingService.showMessage('info', 'Visit Opened ! !');
-                })
+                                        {
+                                            "concept": {
+                                                "uuid": "5090AAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                                            },
+                                            "valueNumeric": valueNumeric
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "absentees": absenteesObj,
+                        "locationName": "ART/TB Clinic"
+                    };
+                    
+                    console.log(data);
+                    apiUrl = Bahmni.Registration.Constants.baseOpenMRSRESTURL+'/cagVisit/';
+                    $http({
+                        url: apiUrl,
+                        method: 'POST',
+                        headers: {
+                        'Content-Type': 'application/json'
+                        },
+                        data: angular.toJson(data)
+                    }).then(function(response){
+                        messagingService.showMessage('info', 'Visits Opened ! !');
+                    })
+                }
+                // $scope.patientsToBeStartedVisits = [];
             }
 
             $scope.fetchCag = function(url) {

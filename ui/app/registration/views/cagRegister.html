@@ -192,11 +192,12 @@
                         /* margin: -33px 0px 3px 0px;*/"> 
                            
                            <div class="toggle-list">
-                            <div class="toggle-item">
+                             <div class="toggle-item">
                                 <div class="toggle-checkbox">
                                     <div class="col col4" style="padding: 0px; margin: -10px;">
                                         <label class="switch">
-                                            <input type="checkbox" ng-model="test" value="true">
+                                            <input type="checkbox" ng-model="test" value="true" 
+                                            ng-click="updateSelectedPatients($index)">
                                             <span class="slider round"></span>
                                         </label>
                                     </div>
@@ -212,8 +213,10 @@
                                         <span class="fa fa-remove"></span>
                                     </button>
                                 </div>
+                                {{selectedIndices}}
+                                {{unselectedIndices}}
+                                </div>
                             </div>
-                        </div>
                                             
                             
                             
@@ -233,9 +236,9 @@
                            
                             
 
-                        </div>   
+                            </div>   
                         
-                        <!-- <button type="button" id='startVisitButton' ng-click="startVisit(patientx,$index)" 
+                         <!-- <button type="button" id='startVisitButton' ng-click="startVisit(patientx,$index)" 
                                     style=" color: white; 
                                             border-color:green; 
                                             width: 300px;
@@ -250,14 +253,8 @@
 
 
                            
-                        <div class="row" ng-show="cag.cagPatientList.length==0">
-                                <span>No members added...</span>
-                            
-                        </div>
-                    </div>
-                    
-                </section>
-                <section class="form-field-inline" ng-hide="uuid===''">
+                         <div class="row" ng-show="cag.cagPatientList.length==0"> <span>No members added...</span> </div>
+                    <section class="form-field-inline" ng-hide="uuid===''">
                     <article class="form-field">
                         <div class="field-attribute col col2">
                             <label for="newField">
@@ -302,11 +299,13 @@
                     <div class="form-field">
                         <i ng-click="addPatientToCag(patientTobeAdded,cag.cagPatientList.length)" class="fa fa-plus field-value" aria-hidden="true" style="color: green; font-size:40px; margin: -10px 0pc 0pc -16pc;"></i>
                       <!-- <button style="width: 20pc;"> Open Visit(s)</button> -->
-                      <a onclick="alert('BUtton to open patient Visits')" class="GFG"> 
+                      <a class="GFG" ng-click="startVisit()"> 
                         Open CAG Visits
                     </a> 
                     </div>
                 </section>
+            </section>
+                
                 
                 <p><br></p>
                 <p><br></p>
