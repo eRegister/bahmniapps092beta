@@ -22,7 +22,10 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 10.x
-        
+# Note
+# If you're using a later version of Ubuntu, say 24.04
+# You might run into issues installing Compass
+# so use Ruby 2.7.8 with ffi 1.9.18
     - name: Use ruby 2.7
       uses: actions/setup-ruby@v1
       with:
