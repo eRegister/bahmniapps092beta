@@ -639,6 +639,50 @@ angular.module('bahmni.clinical').controller('ConsultationController',
                 return deferred.promise;
             }
             // console.log($scope.consultation);
+            $scope.normalSave = function(toStateConfig){
+                return spinner.forPromise($q.all([preSavePromise(), encounterService.getEncounterType($state.params.programUuid, sessionService.getLoginLocationUuid())])
+                .then(function (results) {
+                    var encounterData = results[0];
+                    encounterData.encounterTypeUuid = results[1].uuid;
+                    var params = angular.copy($state.params);
+                    params.cachebuster = Math.random();
+
+                    return encounterService.create(encounterData)
+                        .then(function (saveResponse) {
+                            var messageParams = { encounterUuid: saveResponse.data.encounterUuid, encounterType: saveResponse.data.encounterType };
+                            auditLogService.log($scope.patient.uuid, "EDIT_ENCOUNTER", messageParams, "MODULE_LABEL_CLINICAL_KEY");
+                            var consultationMapper = new Bahmni.ConsultationMapper(configurations.dosageFrequencyConfig(), configurations.dosageInstructionConfig(),
+                                configurations.consultationNoteConcept(), configurations.labOrderNotesConcept(), $scope.followUpConditionConcept);
+                            var consultation = consultationMapper.map(saveResponse.data);
+                            consultation.lastvisited = $scope.lastvisited;
+                            return consultation;
+                        }).then(function (savedConsultation) {
+                            return spinner.forPromise(diagnosisService.populateDiagnosisInformation($scope.patient.uuid, savedConsultation)
+                                .then(function (consultationWithDiagnosis) {
+                                    return saveConditions().then(function (savedConditions) {
+                                        consultationWithDiagnosis.conditions = savedConditions;
+                                        messagingService.showMessage('info', "{{'CLINICAL_SAVE_SUCCESS_MESSAGE_KEY' | translate}}");
+                                    }, function () {
+                                        consultationWithDiagnosis.conditions = $scope.consultation.conditions;
+                                    }).then(function () {
+                                        copyConsultationToScope(consultationWithDiagnosis);
+                                        if ($scope.targetUrl) {
+                                            return $window.open($scope.targetUrl, "_self");
+                                        }
+                                        return $state.transitionTo(toStateConfig ? toStateConfig.toState : $state.current, toStateConfig ? toStateConfig.toParams : params, {
+                                            inherit: false,
+                                            notify: true,
+                                            reload: (toStateConfig !== undefined)
+                                        });
+                                    });
+                                }));
+                        }).catch(function (error) {
+                            var message = Bahmni.Clinical.Error.translate(error) || "{{'CLINICAL_SAVE_FAILURE_MESSAGE_KEY' | translate}}";
+                            messagingService.showMessage('error', message);
+                        });
+                    }
+                ));
+            }
             $scope.save = function (toStateConfig) {
                 patientListSpinner = showSpinner(spinner, $(".test"));
             // hideSpinner(spinner, patientListSpinner, $(".tab-content"));
@@ -703,13 +747,17 @@ angular.module('bahmni.clinical').controller('ConsultationController',
                                         
                                         // 746818ac-65a0-4d74-9609-ddb2c330a31b
                                         if(res2[0]){
-                                            if(res2[0].observations.length==1 && res2[0].observations[0].concept.uuid=="746818ac-65a0-4d74-9609-ddb2c330a31b"){
+                                            $scope.followupIndex=$scope.searchCagFollowupObs("746818ac-65a0-4d74-9609-ddb2c330a31b",res2[0].observations)
+                                            console.log($scope.followupIndex);
+                                            console.log(res2[0].observations);
+                                            if($scope.followupIndex!=-1){
                                                 $scope.provider = $rootScope.currentProvider.uuid;                                               
-                                                for(var i = 0; i < res2[0].observations[0].groupMembers.length; i++){
-                                                    if(res2[0].observations[0].groupMembers[i].concept.uuid=="65aa58be-3957-4c82-ad63-422637c8dd18"){
-                                                        var formData = res2[0].observations[0].groupMembers[i];
-                                                        
+                                                for(var i = 0; i < res2[0].observations[$scope.followupIndex].groupMembers.length; i++){
+                                                    if(res2[0].observations[$scope.followupIndex].groupMembers[i].concept.uuid=="65aa58be-3957-4c82-ad63-422637c8dd18"){
+                                                        var formData = res2[0].observations[$scope.followupIndex].groupMembers[i];
+                                                        console.log(formData);
                                                         for(var j = 0; j < formData.groupMembers.length; j++){
+                                                            console.log(formData.groupMembers.length);
                                                             //Type of client
                                                             if(formData.groupMembers[j].concept.uuid=="e0bc761d-ac3b-4033-92c7-476304b9c5e8"){
                                                                 formData.groupMembers[j].value= formData.groupMembers[j].possibleAnswers[1];
@@ -776,11 +824,11 @@ angular.module('bahmni.clinical').controller('ConsultationController',
                                                                 $scope.HIVCareWHOStagingUuid = "aedaa567-d708-44db-95ea-b3b30790ffc8";
                                                             }
                                                         }
-                                                        res2[0].observations[0].groupMembers[i]=formData;
+                                                        res2[0].observations[$scope.followupIndex].groupMembers[i]=formData;
                                                     }
                                                 }
                                                 // $scope.consultation.observations=res2[0].observations;
-                                               
+                                                
 
                                                 //The function to return POST reponse
                                                 var postCagEncounter = createCagEncounter(
@@ -891,20 +939,28 @@ angular.module('bahmni.clinical').controller('ConsultationController',
                                                         messagingService.showMessage('error',err.data.error.message);
                                                     }
                                                 );
+                                                var followupFormData=res2[0].observations[$scope.followupIndex];
+                                                res2[0].observations.splice($scope.followupIndex, 1)
+                                                console.log(res2[0].observations);
+                                                $scope.normalSave(toStateConfig);
+                                                res2[0].observations.push(followupFormData);
+                                                hideSpinner(spinner, patientListSpinner, $(".test"));
                                             }
                                             else{
+                                                $scope.normalSave(toStateConfig);
                                                 hideSpinner(spinner, patientListSpinner, $(".test"));
-                                                alert("Cag visit open! Can only save HIV Care and Treatment - Followup form");
                                             }
+                                            
                                         }
                                     }).catch(function(error){
                                         console.log(error);
                                     }); 
                                     
                                 }).catch(function(error){console.log(error)}); 
-                            }else{
+                            }
+                            else{
                                 hideSpinner(spinner, patientListSpinner, $(".test"));
-                                // console.log("Patient is not in any cag");
+                                console.log("Patient is not in any cag");
                             }
                         }
                         ).catch(function(error){
@@ -912,49 +968,9 @@ angular.module('bahmni.clinical').controller('ConsultationController',
                         });
                     }
                     else{
+                        
+                        $scope.normalSave(toStateConfig);
                         hideSpinner(spinner, patientListSpinner, $(".test"));
-                        return spinner.forPromise($q.all([preSavePromise(), encounterService.getEncounterType($state.params.programUuid, sessionService.getLoginLocationUuid())])
-                        .then(function (results) {
-                            var encounterData = results[0];
-                            encounterData.encounterTypeUuid = results[1].uuid;
-                            var params = angular.copy($state.params);
-                            params.cachebuster = Math.random();
-
-                            return encounterService.create(encounterData)
-                                .then(function (saveResponse) {
-                                    var messageParams = { encounterUuid: saveResponse.data.encounterUuid, encounterType: saveResponse.data.encounterType };
-                                    auditLogService.log($scope.patient.uuid, "EDIT_ENCOUNTER", messageParams, "MODULE_LABEL_CLINICAL_KEY");
-                                    var consultationMapper = new Bahmni.ConsultationMapper(configurations.dosageFrequencyConfig(), configurations.dosageInstructionConfig(),
-                                        configurations.consultationNoteConcept(), configurations.labOrderNotesConcept(), $scope.followUpConditionConcept);
-                                    var consultation = consultationMapper.map(saveResponse.data);
-                                    consultation.lastvisited = $scope.lastvisited;
-                                    return consultation;
-                                }).then(function (savedConsultation) {
-                                    return spinner.forPromise(diagnosisService.populateDiagnosisInformation($scope.patient.uuid, savedConsultation)
-                                        .then(function (consultationWithDiagnosis) {
-                                            return saveConditions().then(function (savedConditions) {
-                                                consultationWithDiagnosis.conditions = savedConditions;
-                                                messagingService.showMessage('info', "{{'CLINICAL_SAVE_SUCCESS_MESSAGE_KEY' | translate}}");
-                                            }, function () {
-                                                consultationWithDiagnosis.conditions = $scope.consultation.conditions;
-                                            }).then(function () {
-                                                copyConsultationToScope(consultationWithDiagnosis);
-                                                if ($scope.targetUrl) {
-                                                    return $window.open($scope.targetUrl, "_self");
-                                                }
-                                                return $state.transitionTo(toStateConfig ? toStateConfig.toState : $state.current, toStateConfig ? toStateConfig.toParams : params, {
-                                                    inherit: false,
-                                                    notify: true,
-                                                    reload: (toStateConfig !== undefined)
-                                                });
-                                            });
-                                        }));
-                                }).catch(function (error) {
-                                    var message = Bahmni.Clinical.Error.translate(error) || "{{'CLINICAL_SAVE_FAILURE_MESSAGE_KEY' | translate}}";
-                                    messagingService.showMessage('error', message);
-                                });
-                            }
-                        ));
                     }
                 })
                 patientListSpinner = showSpinner(spinner, $(".test"));
