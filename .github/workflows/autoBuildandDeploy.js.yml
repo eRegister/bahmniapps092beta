@@ -5,11 +5,12 @@ name: Autobuild CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ production ]
 
 defaults:
   run:
     working-directory: ui
+    workflow_dispatch:
 jobs:
   build:
 
