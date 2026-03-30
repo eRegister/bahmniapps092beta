@@ -6,11 +6,11 @@ name: Autobuild CI
 on:
   push:
     branches: [ production ]
+    workflow_dispatch:
 
 defaults:
   run:
     working-directory: ui
-    workflow_dispatch:
 jobs:
   build:
 
