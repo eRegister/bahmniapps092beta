@@ -23,6 +23,12 @@ Bahmni.Clinical.VisitHistoryEntry = (function () {
             var stopDateString = moment(this.stopDatetime).format("YYYYMMDD");
             return startDateString === stopDateString;
         },
+        
+        getVisitLocations: function (){
+            if (this.location) {
+                return this.location.name || this.location.display;
+            }
+        },
 
         getVisitType: function () {
             if (this.visitType) {
