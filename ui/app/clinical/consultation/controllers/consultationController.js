@@ -706,8 +706,13 @@ angular.module('bahmni.clinical').controller('ConsultationController',
                                             if(res2[0].observations.length==1 && res2[0].observations[0].concept.uuid=="746818ac-65a0-4d74-9609-ddb2c330a31b"){
                                                 $scope.provider = $rootScope.currentProvider.uuid;                                               
                                                 for(var i = 0; i < res2[0].observations[0].groupMembers.length; i++){
-                                                    if(res2[0].observations[0].groupMembers[i].concept.uuid=="65aa58be-3957-4c82-ad63-422637c8dd18"){
+                                                    if(res2[0].observations[0].groupMembers[i].concept.uuid=="6fba4db0-4be0-48ab-b70f-68249959fbf2"){
                                                         var formData = res2[0].observations[0].groupMembers[i];
+                                                        var typeOfClient = res2[0].observations[0].groupMembers.find(function(member) {
+                                                                return member.concept && 
+                                                                    member.concept.uuid === "e0bc761d-ac3b-4033-92c7-476304b9c5e8";
+                                                            });
+                                                        formData.groupMembers.push(typeOfClient);
                                                         
                                                         for(var j = 0; j < formData.groupMembers.length; j++){
                                                             //Type of client
