@@ -14,15 +14,25 @@ angular.module('bahmni.appointments')
             });
         };
 
-        var filterAppointmentsByProviders = function (appointments, providerUuids) {
-            if (_.isEmpty(providerUuids)) {
-                return appointments;
-            }
-            return _.filter(appointments, function (appointment) {
-                if (!appointment.provider) return _.includes(providerUuids, 'no-provider-uuid');
-                return appointment.provider && _.includes(providerUuids, appointment.provider.uuid);
-            });
-        };
+//        var filterAppointmentsByProviders = function (appointments, providerUuids) {
+//            if (_.isEmpty(providerUuids)) {
+//                return appointments;
+//            }
+//            return _.filter(appointments, function (appointment) {
+//                if (!appointment.provider) return _.includes(providerUuids, 'no-provider-uuid');
+//                return appointment.provider && _.includes(providerUuids, appointment.provider.uuid);
+//            });
+//        };
+
+        var filterAppointmentsByLocation = function (appointments, locationList) {
+                    if (_.isEmpty(locationList)) {
+                        return appointments;
+                    }
+
+                    return _.filter(appointments, function (appointment) {
+                        return _.includes(locationList, appointment.location.uuid);
+                    });
+                };
 
         var filterAppointmentsByStatus = function (appointments, statusList) {
             if (_.isEmpty(statusList)) {
@@ -38,13 +48,14 @@ angular.module('bahmni.appointments')
                 return appointments;
             }
             if ((_.isEmpty(filters.serviceUuids) && _.isEmpty(filters.serviceTypeUuids))) {
-                var appointmentsFilteredByProviders = filterAppointmentsByProviders(appointments, filters.providerUuids);
-                return filterAppointmentsByStatus(appointmentsFilteredByProviders, filters.statusList);
+                var appointmentsFilteredByLocation = filterAppointmentsByLocation(appointments, filters.locationList);
+                return filterAppointmentsByStatus(appointmentsFilteredByLocation, filters.statusList);
             }
+
             var appointmentsFilteredByService = filterAppointmentsByService(appointments, filters.serviceUuids);
             var appointmentsFilteredByServiceType = filterAppointmentsByServiceType(appointments, filters.serviceTypeUuids);
             var appointmentsFilteredBySpeciality = appointmentsFilteredByService.concat(appointmentsFilteredByServiceType);
-            var appointmentsFilteredByProviders = filterAppointmentsByProviders(appointmentsFilteredBySpeciality, filters.providerUuids);
-            return filterAppointmentsByStatus(appointmentsFilteredByProviders, filters.statusList);
+            var appointmentsFilteredByLocation = filterAppointmentsByLocation(appointmentsFilteredBySpeciality, filters.locationList);
+            return filterAppointmentsByStatus(appointmentsFilteredByLocation, filters.statusList);
         };
     }]);

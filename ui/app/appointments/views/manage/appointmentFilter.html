@@ -44,14 +44,15 @@
         </div>
 
     </div>
-    <div class="appointment-filter-items provider-block">
-        <label>{{::'APPOINTMENT_PROVIDER' |translate}}</label>
+
+    <div class="appointment-filter-items status-block">
+        <label>Location</label>
         <multi-select-autocomplete
-                input-items="providers"
-                selected-values="selectedProviders"
+                input-items="locationList"
+                selected-values="selectedLocationList"
                 display-property="'name'"
                 key-property="'uuid'"
-                placeholder="::'APPOINTMENT_ENTER_PROVIDER_NAME_KEY'"
+                placeholder="'Enter location name'"
                 load-on-down-arrow="true"
                 auto-complete-min-length="1"></multi-select-autocomplete>
 

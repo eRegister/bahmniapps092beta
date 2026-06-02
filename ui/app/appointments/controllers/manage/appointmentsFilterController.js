@@ -1,13 +1,21 @@
 'use strict';
 
 angular.module('bahmni.appointments')
-    .controller('AppointmentsFilterController', ['$scope', '$state', '$rootScope', '$q', '$translate', 'appointmentsServiceService', 'spinner', 'ivhTreeviewMgr', 'providerService', 'appService',
-        function ($scope, $state, $rootScope, $q, $translate, appointmentsServiceService, spinner, ivhTreeviewMgr, providerService, appService) {
+    .controller('AppointmentsFilterController', ['$scope', '$state', '$rootScope', '$q', '$translate', 'locationService', 'appointmentsServiceService', 'spinner', 'ivhTreeviewMgr', 'providerService', 'appService',
+        function ($scope, $state, $rootScope, $q, $translate, locationService, appointmentsServiceService, spinner, ivhTreeviewMgr, providerService, appService) {
             var init = function () {
                 $scope.isSpecialityEnabled = appService.getAppDescriptor().getConfigValue('enableSpecialities');
                 $scope.isServiceTypeEnabled = appService.getAppDescriptor().getConfigValue('enableServiceTypes');
                 $scope.isFilterOpen = $state.params.isFilterOpen;
                 $scope.isSearchEnabled = $state.params.isSearchEnabled;
+
+                locationService.getAllByTag("Visit Location").then(
+                    function (response) {
+                        $scope.locationList = response.data.results;
+                        $scope.selectedLocationList = $scope.locationList;
+                    }
+                );
+
                 $scope.statusList = _.map(Bahmni.Appointments.Constants.appointmentStatusList, function (status) {
                     return {name: status, value: status};
                 });
@@ -102,6 +110,7 @@ angular.module('bahmni.appointments')
                     serviceUuids: [],
                     serviceTypeUuids: [],
                     providerUuids: [],
+                    locationList: [],
                     statusList: []
                 };
             };
@@ -118,6 +127,7 @@ angular.module('bahmni.appointments')
                     ivhTreeviewMgr.deselectAll($scope.selectedSpecialities, false);
                 }
                 $scope.selectedProviders = [];
+                $scope.selectedLocationList = [];
                 $scope.selectedStatusList = [];
                 $scope.showSelected = false;
                 $scope.filterSelectedValues = undefined;
@@ -186,6 +196,10 @@ angular.module('bahmni.appointments')
                     return provider.uuid;
                 });
 
+                $state.params.filterParams.locationList = _.map($scope.selectedLocationList, function (location) {
+                    return location.uuid;
+                });
+
                 $state.params.filterParams.statusList = _.map($scope.selectedStatusList, function (status) {
                     return status.value;
                 });
@@ -221,6 +235,10 @@ angular.module('bahmni.appointments')
                             return status.name !== "Cancelled";
                         });
                     } else {
+                        $scope.locationList = _.map(Bahmni.Appointments.Constants.locationList, function (location) {
+                            return location;
+                        });
+
                         $scope.statusList = _.map(Bahmni.Appointments.Constants.appointmentStatusList, function (status) {
                             return {name: status, value: status};
                         });
